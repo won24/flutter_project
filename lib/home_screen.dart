@@ -3,7 +3,6 @@ import 'package:project/number_list.dart';
 import 'package:project/widgets/add_number_widget.dart';
 import '../widgets/detail_widget.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -12,8 +11,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-  // 전화번호 List
   List<Map<int, String>> numberList = [];
 
   @override
@@ -23,52 +20,70 @@ class _HomeScreenState extends State<HomeScreen> {
     numberList = externalNumberList.numberList;
   }
 
+  void _navigateToAddNumber() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddNumber(numberList: numberList),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        numberList = List<Map<int, String>>.from(result); // 리스트 갱신
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("전화번호부"),
+        title: const Text("전화번호부"),
         actions: [
           IconButton(
-            onPressed: (){
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddNumber(numberList: numberList),
-                ),
-              );
-            },
-            icon: Icon(Icons.add), // 더하기(+) 버튼
+            onPressed: _navigateToAddNumber,
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
       body: ListView.builder(
         itemCount: numberList.length,
-        itemBuilder: (context, i){
-          // 전화번호 리스트를 쪼개 담는 List
-          dynamic numberMap = numberList[i];
-          print(numberMap); // 일단 인덱스로 접근
-          print(numberMap[++i]); // 1+i로 키에 접근
-          List<String> parts = numberMap[i].toString().split(", "); // 바로 윗 줄에서 +1 증가된 i
-          print(parts); // 배열화된 정보
+        itemBuilder: (context, i) {
+          final numberMap = numberList[i];
+          final parts = numberMap.values.first.split(", ");
           return ListTile(
-            title: Text(parts[0]), // 이름
-            subtitle: Text(parts[1]), // 번호
-            trailing: Text(parts[2]), // 설명
-            onTap: (){
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailWidget(numberList:numberList, name: parts[0], phone: parts[1], description: parts[2]), // 상세 내용
-                  )
+            title: Text(parts[0]),
+            subtitle: Text(parts[1]),
+            trailing: Text(parts[2]),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailWidget(
+                    numberList: numberList,
+                    name: parts[0],
+                    phone: parts[1],
+                    description: parts[2],
+                  ),
+                ),
               );
+
+              if (result == 'deleted') {
+                setState(() {
+                  numberList.removeAt(i);
+                });
+              } else if (result is Map<String, String>) {
+                setState(() {
+                  numberList[i] = {
+                    i + 1: '${result['name']}, ${result['phone']}, ${result['description']}'
+                  };
+                });
+              }
             },
           );
         },
       ),
-
-
     );
   }
 }
-

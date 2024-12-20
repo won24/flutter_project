@@ -18,10 +18,21 @@ class _NumberAddState extends State<AddNumber> {
   @override
   void initState() {
     super.initState();
-    _nextId = widget.numberList.isEmpty ? 1 : widget.numberList.last.keys.first + 1;
+    _nextId = widget.numberList.isEmpty
+        ? 1
+        : widget.numberList.last.keys.first + 1; // ID 자동 증가
   }
 
   void addNumber() {
+    if (nameController.text.isEmpty ||
+        numberController.text.isEmpty ||
+        descriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('모든 필드를 입력해주세요.')),
+      );
+      return;
+    }
+
     setState(() {
       widget.numberList.add({
         _nextId: '${nameController.text}, ${numberController.text}, ${descriptionController.text}'
@@ -33,16 +44,18 @@ class _NumberAddState extends State<AddNumber> {
       numberController.clear();
       descriptionController.clear();
     });
+
+    Navigator.pop(context, widget.numberList); // 업데이트된 리스트 반환
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('전화번호 추가'),
+        title: const Text('전화번호 추가'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context, widget.numberList),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, null),
         ),
       ),
       body: Padding(
@@ -51,26 +64,22 @@ class _NumberAddState extends State<AddNumber> {
           children: [
             TextField(
               controller: nameController,
-              decoration: InputDecoration(labelText: '이름'),
+              decoration: const InputDecoration(labelText: '이름'),
             ),
             TextField(
               controller: numberController,
-              decoration: InputDecoration(labelText: '전화번호'),
+              decoration: const InputDecoration(labelText: '전화번호'),
               keyboardType: TextInputType.phone,
             ),
             TextField(
               controller: descriptionController,
-              decoration: InputDecoration(labelText: '설명'),
+              decoration: const InputDecoration(labelText: '설명'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                addNumber();
-                Navigator.pop(context, widget.numberList);
-              },
-              child: Text('추가'),
+              onPressed: addNumber,
+              child: const Text('추가'),
             ),
-            SizedBox(height: 20),
           ],
         ),
       ),

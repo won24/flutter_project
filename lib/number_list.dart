@@ -53,5 +53,3 @@ class ExternalNumberList{
     {50: '유승호, 010-0011-2233, 교수'}
   ];
 }
-
-
